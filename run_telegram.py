@@ -12,7 +12,9 @@ if not os.getenv("TELEGRAM_BOT_TOKEN"):
     sys.exit("TELEGRAM_BOT_TOKEN missing. Copy .env.example to .env and paste the token from @BotFather.")
 
 print("Runway · Telegram door")
-print("  Gemini:", "on" if os.getenv("GEMINI_API_KEY") else "off (heuristic fallback; no voice/photo)")
+from backend import llm
+print(" ", llm.probe())
+print("  Demo mode:", "ON (voice/photo fall back to canned text if Gemini fails)" if os.getenv("DEMO_MODE", "1") == "1" else "off")
 print("  Engine:", "running here (RUN_ENGINE=1)" if os.getenv("RUN_ENGINE") == "1" else "expected in run_web.py")
 print("  Open your bot in Telegram and send /start\n")
 

@@ -44,7 +44,17 @@ def _heuristic(text: str, now: datetime) -> list[dict]:
     for p in parts or [text]:
         low = p.lower()
         due, fuzz, typ = None, None, "promise"
-        if "tonight" in low:
+        rel = re.search(r"\bin\s+(\d+|an?|half an?)\s*(min|mins|minute|minutes|hr|hrs|hour|hours|day|days|week|weeks)\b", low)
+        if rel:
+            n = {"a": 1, "an": 1, "half a": 0.5, "half an": 0.5}.get(rel.group(1), None)
+            n = float(rel.group(1)) if n is None else n
+            unit = rel.group(2)
+            delta = timedelta(minutes=n) if unit.startswith("min") else timedelta(hours=n) if unit.startswith(("hr", "hour")) \
+                else timedelta(days=n) if unit.startswith("day") else timedelta(weeks=n)
+            due, fuzz = now + delta, rel.group(0)
+        elif re.search(r"\b(right now|now|asap|immediately)\b", low):
+            due, fuzz = now + timedelta(minutes=5), "now"
+        elif "tonight" in low:
             due, fuzz = now.replace(hour=23, minute=0, second=0, microsecond=0), "tonight"
         elif "tomorrow" in low:
             due, fuzz = (now + timedelta(days=1)).replace(hour=18, minute=0, second=0, microsecond=0), "tomorrow"
@@ -66,10 +76,18 @@ def _heuristic(text: str, now: datetime) -> list[dict]:
                     due, fuzz = cand, m.group(0).strip()
                 except ValueError:
                     pass
-        tm = re.search(r"\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b", low)
-        if tm and due is not None:
-            h = int(tm.group(1)) % 12 + (12 if tm.group(3) == "pm" else 0)
-            due = due.replace(hour=h, minute=int(tm.group(2) or 0))
+        # clock times: "at 4 00 AM", "at 6 01", "5pm", "17:30"
+        tm = re.search(r"\b(?:at\s+)?(\d{1,2})(?:[:. ](\d{2}))?\s*(am|pm)?\b(?!\s*(?:min|hour|day|week))", low)
+        if tm and not rel and (tm.group(3) or tm.group(2) is not None):
+            h = int(tm.group(1)); mnt = int(tm.group(2) or 0)
+            if tm.group(3):
+                h = h % 12 + (12 if tm.group(3) == "pm" else 0)
+            if 0 <= h < 24 and 0 <= mnt < 60:
+                base = due if due is not None else now
+                cand = base.replace(hour=h, minute=mnt, second=0, microsecond=0)
+                if due is None and cand <= now:
+                    cand += timedelta(days=1)
+                due, fuzz = cand, fuzz or tm.group(0).strip()
         if any(k in low for k in ("birthday", "bday", "b'day")):
             typ = "birthday"
         elif any(k in low for k in ("submit", "submission", "deadline", "due", "exam", "assignment")):

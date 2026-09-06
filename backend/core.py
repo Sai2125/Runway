@@ -113,11 +113,20 @@ async def dump(user_id: str, text: str, source: str = "web") -> str:
     return await voice.render("ack", None, optimism_index(uid), names=[i["what"] for i in items])
 
 
+import os
+DEMO_MODE = os.getenv("DEMO_MODE", "1") == "1"
+DEMO_PHOTO_TEXT = os.getenv("DEMO_PHOTO_TEXT", "Priya's birthday on the 20th; pay the electricity bill by Friday; book dentist in 3 days")
+DEMO_VOICE_TEXT = os.getenv("DEMO_VOICE_TEXT", "I'll send Rahul the deck tonight, and call Amma tomorrow evening")
+
+
 async def dump_image(user_id: str, image: bytes, source: str = "web-photo") -> str:
     text = await llm.vision(image, "Transcribe any handwritten or printed commitments, dates, names. Plain text only, one per line.")
+    if not text and DEMO_MODE:
+        text = DEMO_PHOTO_TEXT                      # demo fallback: the photo "reads" as this
     if not text:
         return "I can see the photo but can't read it right now — type it for me?"
-    return await dump(user_id, text, source)
+    line = await dump(user_id, text, source)
+    return f"Read: “{text}”\n\n{line}"
 
 
 async def now_card(user_id: str) -> dict | None:

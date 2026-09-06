@@ -41,6 +41,28 @@ def enabled() -> bool:
     return _get_client() is not None
 
 
+LAST_ERROR: str | None = None
+
+
+def probe() -> str:
+    """Synchronous startup check. Returns a human line and records LAST_ERROR."""
+    global LAST_ERROR
+    if not os.getenv("GEMINI_API_KEY"):
+        LAST_ERROR = "GEMINI_API_KEY not set"
+        return "Gemini: OFF — GEMINI_API_KEY not set in .env → heuristic fallback (dates like 'in 15 min' won't parse)"
+    c = _get_client()
+    if not c:
+        LAST_ERROR = "google-genai import/client failed"
+        return "Gemini: OFF — google-genai failed to initialise (pip install -r requirements.txt)"
+    try:
+        r = c.models.generate_content(model=MODEL, contents="Reply with the single word OK.")
+        LAST_ERROR = None
+        return f"Gemini: ON — model {MODEL} answered ({(r.text or '').strip()[:20]!r})"
+    except Exception as e:
+        LAST_ERROR = str(e)
+        return f"Gemini: FAILING — model {MODEL}: {str(e)[:160]} → heuristic fallback. Check GEMINI_MODEL / GEMINI_BASE_URL."
+
+
 async def text(system: str, user: str, max_tokens: int = 400, temperature: float = 0.7) -> str | None:
     c = _get_client()
     if not c:
