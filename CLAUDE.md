@@ -257,6 +257,17 @@ If the horizon loop nudges the team at the right moment during the day, the pipe
 - [ ] Backend team ships `core.py` per CORE_CONTRACT.md (functions + `channels` table + `OUTBOUND_HANDLERS` loop in `horizon.py`)
 - [ ] Swap `core_fake` → `core` import; verify web dump → Telegram nudge
 
+**Real core — built 5:50 PM (backend/core.py over SQLite, both doors share it)**
+- [x] `core.py` implements CORE_CONTRACT: commitments/events/channels/aliases/contacts/prefs/outbox tables
+- [x] `horizon.py` wall-clock engine with demo `clock_offset`; **surface budget = 2** (P1); slips; 30-min check-in
+- [x] `llm.py` Gemini gateway (text/vision/audio) → `extract.py`, `voice.py`, `stt.py`; heuristic fallback when no key
+- [x] Web door `main.py` + `frontend/index.html` Horizon view (fog w/ countdown, Now card, slip card, index modal, mic, image paste, SSE toasts, advance/reset)
+- [x] Telegram on real core: `/link` (same brain as web), `/iam <Name>` (slip delivery), Done → duration → index, outbox polling
+- [x] `seed/demo_seed.py`; end-to-end verified over HTTP (dump → hidden → surface → doing → done → slip)
+- [ ] Set GEMINI_API_KEY and verify extraction + voice quality on real messages
+- [ ] Dependency chains (sub-steps with own lead times) — next
+- [ ] Google Calendar read for "next commitment / free window" — next
+
 **Sprint 2**
 - [ ] Horizon loop live · SSE push · Now card updates without refresh
 - [ ] Voice layer wired for `ack / surface / checkin / backoff`

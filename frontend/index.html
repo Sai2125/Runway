@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Runway — Horizon</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0d0b14;--ink2:#161225;--fog:#241d3a;--mist:#3a2f5c;--cream:#f4efe6;--dim:rgba(244,239,230,.62);--faint:rgba(244,239,230,.28);--ember:#ff8a5b;--dawn:#ffd9a8;--sage:#9fd3b6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--cream);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.serif{font-family:'Instrument Serif',serif}.mono{font-family:'JetBrains Mono',monospace}
+button{font-family:inherit;cursor:pointer;border:none}
+
+/* top bar */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(244,239,230,.08);gap:16px;flex-wrap:wrap}
+.logo{font-family:'Instrument Serif';font-size:24px}.logo span{color:var(--ember)}
+.clock{font-family:'JetBrains Mono';font-size:13px;color:var(--dim);display:flex;gap:14px;align-items:center}
+.clock b{color:var(--dawn);font-weight:500}
+.clock .off{color:var(--ember)}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{padding:7px 12px;border-radius:999px;background:rgba(244,239,230,.06);border:1px solid rgba(244,239,230,.12);color:var(--cream);font-size:12px}
+.chip:hover{border-color:var(--dawn)}
+.chip.warn{border-color:rgba(255,138,91,.5);color:var(--ember)}
+.index{display:flex;align-items:baseline;gap:6px;padding:6px 14px;border-radius:12px;background:rgba(255,217,168,.08);border:1px solid rgba(255,217,168,.35);cursor:pointer}
+.index b{font-family:'Instrument Serif';font-size:26px;color:var(--dawn);font-weight:400}
+.index small{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.llm{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+/* scene */
+main{flex:1;position:relative;display:grid;grid-template-rows:1fr auto;overflow:hidden}
+.sky{position:relative;padding:32px 28px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+ background:radial-gradient(ellipse 70% 60% at 50% 115%,rgba(255,138,91,.22),transparent 60%),linear-gradient(180deg,var(--ink) 0%,var(--ink2) 70%,var(--fog) 100%)}
+.empty{font-family:'Instrument Serif';font-size:clamp(26px,3.4vw,40px);color:var(--dim);font-style:italic;text-align:center}
+.card{width:min(680px,92vw);padding:26px 28px;border-radius:22px;background:rgba(255,217,168,.08);border:1px solid rgba(255,217,168,.45);box-shadow:0 0 70px rgba(255,217,168,.15);animation:rise .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.card .what{font-family:'Instrument Serif';font-size:clamp(24px,3vw,34px);line-height:1.15;color:var(--dawn)}
+.card .meta{margin:10px 0 14px;color:var(--dim);font-size:14px;display:flex;gap:16px;flex-wrap:wrap}
+.card .meta span b{color:var(--cream);font-weight:500}
+.card .step{padding:10px 14px;border-left:2px solid var(--ember);background:rgba(255,138,91,.08);border-radius:6px;font-style:italic;font-family:'Instrument Serif';font-size:17px}
+.card .line{margin-top:12px;color:var(--cream);font-size:14.5px;line-height:1.45}
+.acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.acts button{padding:9px 16px;border-radius:999px;font-size:13px;background:rgba(244,239,230,.06);border:1px solid rgba(244,239,230,.2);color:var(--cream)}
+.acts button.go{background:var(--dawn);color:var(--ink);border-color:transparent;font-weight:500}
+.acts button:hover{transform:translateY(-1px)}
+.card.slip{border-color:rgba(255,138,91,.5);background:rgba(255,138,91,.06);box-shadow:none}
+.card.slip .what{color:var(--cream);font-size:22px}
+.card.slip .draft{margin-top:10px;padding:12px 14px;border-left:2px solid var(--ember);background:rgba(255,138,91,.08);border-radius:6px;font-style:italic;font-family:'Instrument Serif';font-size:17px;color:var(--dawn)}
+.horizon{position:relative;height:1px;background:linear-gradient(90deg,transparent,rgba(255,217,168,.75),transparent);margin:0 28px}
+.horizon span{position:absolute;right:0;top:-18px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--dawn);opacity:.75}
+
+/* fog */
+.fog{background:linear-gradient(180deg,var(--fog),var(--ink2));padding:22px 28px 14px;min-height:190px;max-height:36vh;overflow:auto}
+.fog h4{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;display:flex;justify-content:space-between}
+.fog h4 i{font-style:normal;color:var(--dim)}
+.fogrow{display:flex;gap:10px;flex-wrap:wrap}
+.hid{padding:9px 14px;border-radius:12px;background:rgba(244,239,230,.05);border:1px solid rgba(244,239,230,.09);font-size:13px;color:var(--dim);display:flex;gap:10px;align-items:baseline;transition:filter .4s,opacity .4s}
+.hid small{font-family:'JetBrains Mono';font-size:10.5px;color:var(--faint)}
+.hid.soon{border-color:rgba(255,217,168,.35);color:var(--cream)}
+.hid.faint{opacity:.45}
+.done{opacity:.35;text-decoration:line-through}
+
+/* dump bar */
+.dump{display:flex;gap:10px;padding:14px 28px 18px;background:var(--ink);border-top:1px solid rgba(244,239,230,.08);align-items:center}
+.dump input{flex:1;padding:14px 18px;border-radius:999px;background:rgba(244,239,230,.05);border:1px solid rgba(244,239,230,.15);color:var(--cream);font-size:15px;font-family:inherit;outline:none}
+.dump input:focus{border-color:var(--dawn)}
+.dump input.listening{border-color:var(--ember);box-shadow:0 0 0 4px rgba(255,138,91,.15)}
+.round{width:46px;height:46px;border-radius:50%;background:rgba(244,239,230,.06);border:1px solid rgba(244,239,230,.2);color:var(--cream);font-size:18px;display:grid;place-items:center}
+.round.on{background:var(--ember);color:var(--ink);border-color:transparent}
+.round.send{background:var(--dawn);color:var(--ink);border-color:transparent}
+
+/* toasts */
+.toasts{position:fixed;left:50%;top:78px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:20;pointer-events:none}
+.toast{padding:11px 18px;border-radius:14px;background:var(--ink2);border:1px solid rgba(255,217,168,.35);color:var(--cream);font-size:14px;max-width:min(640px,90vw);animation:rise .4s;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.toast.sink{border-color:rgba(244,239,230,.15);color:var(--dim)}
+
+/* index modal */
+.modal{position:fixed;inset:0;background:rgba(13,11,20,.8);display:none;place-items:center;z-index:30}
+.modal.show{display:grid}
+.box{width:min(560px,92vw);padding:34px;border-radius:24px;background:var(--ink2);border:1px solid rgba(255,217,168,.3)}
+.box .big{font-family:'Instrument Serif';font-size:110px;line-height:.9;color:var(--dawn);letter-spacing:-.04em}
+.box .big small{font-size:.28em;color:var(--dim);font-style:italic;margin-left:8px}
+.bars{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:64px 1fr 60px;gap:10px;align-items:center;font-size:12px;color:var(--dim)}
+.bar div{height:10px;border-radius:3px;background:var(--sage)}
+.bar div.a{background:var(--ember)}
+.bar span.mono{text-align:right}
+.box p{margin-top:18px;color:var(--dim);font-size:14px;line-height:1.5}
+.box button{margin-top:18px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">run<span>way</span> <span class="llm" id="llm"></span></div>
+  <div class="clock">engine <b id="clock">—</b> <span class="off" id="off"></span></div>
+  <div class="tools">
+    <button class="chip" onclick="adv(60)">+1 h</button>
+    <button class="chip" onclick="adv(360)">+6 h</button>
+    <button class="chip" onclick="adv(1440)">+1 day</button>
+    <button class="chip warn" onclick="resetClock()">reset clock</button>
+    <div class="index" onclick="openIndex()"><b id="idx">—</b><small>×&nbsp;your time</small></div>
+  </div>
+</header>
+
+<main>
+  <section class="sky" id="sky"><div class="empty">Nothing needs you right now.</div></section>
+  <div>
+    <div class="horizon"><span>the horizon · now</span></div>
+    <section class="fog">
+      <h4>below the horizon <i id="counts"></i></h4>
+      <div class="fogrow" id="fog"></div>
+    </section>
+    <div class="dump">
+      <button class="round" id="mic" title="Speak" onclick="toggleMic()">🎙</button>
+      <input id="in" placeholder="Tell me anything you're supposed to do… (Enter to send · paste a photo of a note)">
+      <button class="round send" onclick="send()">↑</button>
+    </div>
+  </div>
+</main>
+
+<div class="toasts" id="toasts"></div>
+<div class="modal" id="modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="box">
+    <div class="big"><span id="idxbig">—</span>×<small>your multiplier</small></div>
+    <div class="bars" id="bars"></div>
+    <p id="idxline"></p>
+    <button class="chip" onclick="document.getElementById('modal').classList.remove('show')">close</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let S=null;
+const fmt=iso=>{if(!iso)return'—';const d=new Date(iso);return d.toLocaleString('en-IN',{weekday:'short',hour:'numeric',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'})};
+const rel=m=>{if(m==null)return'no date';if(m<0)return'passed';if(m<60)return m+' min';if(m<1440)return Math.round(m/60)+' h';return Math.round(m/1440)+' d'};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function api(p,body,method){const r=await fetch(p,{method:method||(body?'POST':'GET'),headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return r.json()}
+function toast(t,cls){const d=document.createElement('div');d.className='toast '+(cls||'');d.textContent=t;$('toasts').appendChild(d);setTimeout(()=>d.remove(),6000)}
+
+async function refresh(){
+  try{S=await api('/state')}catch(e){return}
+  $('clock').textContent=fmt(S.now);$('off').textContent=S.clock_offset_minutes?`(+${Math.round(S.clock_offset_minutes/60)}h demo offset)`:'';
+  $('idx').textContent=S.optimism_index.toFixed(1);$('llm').textContent=S.llm==='gemini'?'· gemini':'· heuristic';
+  const c=S.counts;$('counts').textContent=`${c.hidden} hidden · ${c.now} now · ${c.slipped} slipped · ${c.done} done`;
+  // sky: now + slipped
+  const sky=$('sky');sky.innerHTML='';
+  const nowItems=S.items.filter(i=>i.state==='now');const slipped=S.items.filter(i=>i.state==='slipped');
+  if(!nowItems.length&&!slipped.length){sky.innerHTML='<div class="empty">Nothing needs you right now.</div>'}
+  for(const i of nowItems){
+    const real=Math.round(i.est_minutes*S.optimism_index);
+    const el=document.createElement('div');el.className='card';
+    el.innerHTML=`<div class="what">${esc(i.what)}${i.people?.length?` <span style="color:var(--dim);font-size:.7em">for ${esc(i.people[0])}</span>`:''}</div>
+      <div class="meta"><span>you said <b>${i.est_minutes} min</b></span><span>history says <b>${real}</b></span><span>${i.due_fuzziness?esc(i.due_fuzziness)+' · ':''}due <b>${fmt(i.due)}</b> (${rel(i.due_in_min)})</span></div>
+      <div class="step">First step: ${esc(i.first_step)}</div>
+      <div class="acts">${i.started_at?`<button class="go" onclick="act('${i.id}','done')">Done ✓</button><button onclick="toast('Go. I\\'ll shut up.')">Still going</button>`:
+        `<button class="go" onclick="act('${i.id}','doing')">Doing it</button><button onclick="act('${i.id}','snooze20')">Give me 20</button><button onclick="act('${i.id}','not_today')">Not today</button>`}</div>`;
+    sky.appendChild(el)}
+  for(const i of slipped){
+    const el=document.createElement('div');el.className='card slip';
+    el.innerHTML=`<div class="what">That one got away — ${esc(i.what)}. Happens.</div>
+      <div class="meta"><span>was due <b>${fmt(i.due)}</b></span>${i.people?.length?`<span>tell <b>${esc(i.people[0])}</b>?</span>`:''}</div>
+      ${i.draft?`<div class="draft">“${esc(i.draft)}”</div>`:''}
+      <div class="acts"><button class="go" onclick="slip('${i.id}','send')">Send it</button><button onclick="slip('${i.id}','skip')">Skip</button></div>`;
+    sky.appendChild(el)}
+  // fog: hidden sorted by surfaces_in, then done/closed faint
+  const fog=$('fog');fog.innerHTML='';
+  const hidden=S.items.filter(i=>i.state==='hidden').sort((a,b)=>(a.surfaces_in_min??1e9)-(b.surfaces_in_min??1e9));
+  for(const i of hidden){const m=i.surfaces_in_min;const el=document.createElement('div');el.className='hid'+(m!=null&&m<180?' soon':'')+(m==null||m>1440*3?' faint':'');
+    el.style.filter=m==null?'blur(1.2px)':`blur(${Math.min(2,Math.max(0,(m-120)/1400))}px)`;
+    el.innerHTML=`${esc(i.what)} <small>${i.type} · surfaces in ${rel(m)}${i.due_in_min!=null?' · due '+rel(i.due_in_min):''}</small>`;fog.appendChild(el)}
+  for(const i of S.items.filter(i=>i.state==='done'||i.state==='closed')){const el=document.createElement('div');el.className='hid done';el.innerHTML=`${esc(i.what)} <small>${i.state}</small>`;fog.appendChild(el)}
+}
+async function send(){const v=$('in').value.trim();if(!v)return;$('in').value='';const r=await api('/dump',{text:v});toast(r.line,'sink');refresh()}
+async function act(id,a){const r=await api('/act',{id,action:a});toast(r.line);if(a==='done'){const m=prompt('Roughly how long did it take, in minutes? (leave blank to keep the automatic estimate)');if(m&&+m>0){const r2=await api('/actual',{id,actual_minutes:+m});toast(r2.line)}}refresh()}
+async function slip(id,a){const r=await api(a==='send'?'/slip/send':'/slip/skip',{id});toast(r.line+(a==='send'&&r.recipient_chat_id?'':a==='send'&&r.people?.length?` ${r.people[0]} isn't on Telegram — copy the draft.`:''));refresh()}
+async function adv(m){const r=await api('/debug/advance?minutes='+m);toast(r.line,'sink');refresh()}
+async function resetClock(){const r=await api('/debug/reset-clock');toast(r.line,'sink');refresh()}
+function openIndex(){if(!S)return;$('idxbig').textContent=S.optimism_index.toFixed(1);const b=$('bars');b.innerHTML='';
+  for(const e of S.events.slice(0,6)){const mx=Math.max(e.est_minutes,e.actual_minutes,1);b.innerHTML+=`<div class="bar"><span>said</span><div style="width:${e.est_minutes/mx*100}%"></div><span class="mono">${e.est_minutes}m</span></div><div class="bar"><span>took</span><div class="a" style="width:${e.actual_minutes/mx*100}%"></div><span class="mono">${e.actual_minutes}m</span></div>`}
+  $('idxline').textContent=`When you say 30 minutes, it's usually about ${Math.round(30*S.optimism_index)}. I plan with that number, not the one you say. (${S.events.length} completions)`;$('modal').classList.add('show')}
+$('in').addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+// paste image
+document.addEventListener('paste',async e=>{for(const it of e.clipboardData.items){if(it.type.startsWith('image/')){const f=it.getAsFile();const fd=new FormData();fd.append('file',f,'note.jpg');toast('Reading your note…','sink');const r=await(await fetch('/dump/image',{method:'POST',body:fd})).json();toast(r.line,'sink');refresh()}}});
+// mic — Web Speech API
+let rec=null,listening=false;
+function toggleMic(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){return toast('Speech needs Chrome (Web Speech API).')}
+  if(listening){rec.stop();return}
+  rec=new SR();rec.lang='en-IN';rec.interimResults=true;rec.continuous=false;
+  rec.onstart=()=>{listening=true;$('mic').classList.add('on');$('in').classList.add('listening')};
+  rec.onresult=e=>{let t='';for(const r of e.results)t+=r[0].transcript;$('in').value=t};
+  rec.onend=()=>{listening=false;$('mic').classList.remove('on');$('in').classList.remove('listening');if($('in').value.trim())send()};
+  rec.onerror=e=>toast('Mic: '+e.error);rec.start()}
+// SSE
+try{const es=new EventSource('/events');es.onmessage=e=>{const ev=JSON.parse(e.data);toast(ev.text);refresh()}}catch(e){}
+refresh();setInterval(refresh,3000);
+</script>
+</body>
+</html>

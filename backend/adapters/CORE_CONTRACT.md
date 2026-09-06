@@ -1,5 +1,11 @@
 # Core ↔ Adapter contract (what the Telegram adapter needs from the backend)
 
+> **Status:** implemented in `backend/core.py` (SQLite). Doors may run as separate processes; outbound
+> nudges are written to the `outbox` table per channel — poll `core.outbox_pull(channel)` and ack with
+> `core.outbox_ack(ids)`. `now()` is exposed as `core.now_card()` (name clash with time). `slip_send()`
+> returns a dict `{line, draft, recipient_chat_id, people}` so the door can deliver the draft.
+> Extra helpers: `link_alias`, `register_contact`, `contact_chat`, `set_actual`, `advance`, `reset_clock`, `snapshot`.
+
 Hand this to whoever owns `backend/core.py`. The Telegram adapter (and later WhatsApp, Notes, etc.)
 imports **only** these names from `backend.core`. Core never imports an adapter.
 
